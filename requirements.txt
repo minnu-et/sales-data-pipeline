@@ -1,0 +1,199 @@
+# =============================================================================
+# PYTHON DEPENDENCIES - Data Engineering Pipeline
+# =============================================================================
+# Install all dependencies: pip install -r requirements.txt
+# 
+# For development with virtual environment:
+# python3.10 -m venv .venv
+# source .venv/bin/activate  # Linux/Mac
+# pip install -r requirements.txt
+# =============================================================================
+
+# =============================================================================
+# CORE: Apache Spark
+# =============================================================================
+pyspark==3.4.1
+
+# =============================================================================
+# AWS Integration
+# =============================================================================
+# Boto3 - AWS SDK for Python (S3, CloudWatch, etc.)
+boto3==1.28.85
+botocore==1.31.85
+
+# AWS SDK bundle for Hadoop/Spark S3 integration
+# Note: These are loaded via spark.jars.packages in config, not pip
+
+# =============================================================================
+# Configuration Management
+# =============================================================================
+# Read YAML config files
+PyYAML==6.0.1
+
+# Load environment variables from .env files
+python-dotenv==1.0.0
+
+# =============================================================================
+# Data Quality & Validation
+# =============================================================================
+# Great Expectations - Data quality framework
+great-expectations==0.18.8
+
+# Pydantic - Data validation using Python type annotations
+pydantic==2.5.0
+
+# =============================================================================
+# Testing Framework
+# =============================================================================
+# Pytest - Testing framework
+pytest==7.4.3
+
+# Pytest plugins
+pytest-cov==4.1.0        # Code coverage
+pytest-mock==3.12.0      # Mocking utilities
+
+# Chispa - PySpark testing library (DataFrame assertions)
+chispa==0.9.4
+
+# =============================================================================
+# Code Quality & Linting
+# =============================================================================
+# Black - Code formatter
+black==23.12.0
+
+# Flake8 - Style guide enforcement
+flake8==6.1.0
+
+# Pylint - Code analysis
+pylint==3.0.3
+
+# MyPy - Static type checker
+mypy==1.7.1
+
+# isort - Import sorting
+isort==5.13.2
+
+# =============================================================================
+# Logging & Monitoring
+# =============================================================================
+# Structured logging
+python-json-logger==2.0.7
+
+# Rich - Beautiful terminal output (optional, for dev)
+rich==13.7.0
+
+# =============================================================================
+# Utilities
+# =============================================================================
+# Pandas - For small data manipulation (not for big data processing!)
+pandas==2.1.4
+
+# NumPy - Numerical computing
+numpy==1.26.2
+
+# Python-dateutil - Date parsing utilities
+python-dateutil==2.8.2
+
+# Requests - HTTP library (for API calls, webhooks)
+requests==2.31.0
+
+# =============================================================================
+# Data Visualization (Optional - for local analysis)
+# =============================================================================
+# Matplotlib - Plotting
+matplotlib==3.8.2
+
+# Seaborn - Statistical visualization
+seaborn==0.13.0
+
+# =============================================================================
+# Airflow (for Day 6-8 - orchestration)
+# =============================================================================
+# Note: Airflow is typically installed separately via Docker
+# Uncomment these if installing Airflow directly:
+# apache-airflow==2.8.0
+# apache-airflow-providers-amazon==8.13.0  # For S3 operators
+
+# =============================================================================
+# Development Tools (Optional)
+# =============================================================================
+# IPython - Enhanced Python shell
+ipython==8.18.1
+
+# Jupyter - Notebooks (for exploration)
+jupyter==1.0.0
+notebook==7.0.6
+
+# =============================================================================
+# Future Additions (Commented Out - Add When Needed)
+# =============================================================================
+
+# Streamlit - Dashboard (Day 11)
+streamlit==1.54.0
+
+# Delta Lake - For ACID transactions on data lake
+# delta-spark==3.0.0
+
+# PyArrow - Fast data interchange
+pyarrow==23.0.1
+
+# SQLAlchemy - SQL toolkit (if you add metadata database)
+# sqlalchemy==2.0.23
+# psycopg2-binary==2.9.9  # PostgreSQL adapter
+
+# Redis client (for caching)
+# redis==5.0.1
+
+# Slack SDK (for alerts)
+# slack-sdk==3.26.1
+
+# =============================================================================
+# NOTES FOR INSTALLATION
+# =============================================================================
+# 
+# RECOMMENDED INSTALLATION STEPS:
+# 
+# 1. Create virtual environment:
+#    python3.10 -m venv .venv
+# 
+# 2. Activate virtual environment:
+#    source .venv/bin/activate  # Linux/Mac
+#    .venv\Scripts\activate     # Windows
+# 
+# 3. Upgrade pip:
+#    pip install --upgrade pip
+# 
+# 4. Install dependencies:
+#    pip install -r requirements.txt
+# 
+# 5. Verify installation:
+#    pip list
+#    python -c "import pyspark; print(pyspark.__version__)"
+# 
+# TROUBLESHOOTING:
+# 
+# If PySpark installation fails:
+# - Ensure Java 17 is installed: java -version
+# - Set JAVA_HOME: export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+# 
+# If Great Expectations fails:
+# - Try: pip install great-expectations --no-cache-dir
+# 
+# If you get conflicts:
+# - Create fresh virtual environment
+# - Install dependencies one by one to identify conflicts
+# 
+# VERIFY SPARK INSTALLATION:
+# 
+# python << EOF
+# from pyspark.sql import SparkSession
+# spark = SparkSession.builder.appName("test").getOrCreate()
+# df = spark.createDataFrame([(1, "test")], ["id", "name"])
+# df.show()
+# spark.stop()
+# EOF
+# 
+# =============================================================================
+
+# S3 filesystem access
+s3fs==2026.2.0

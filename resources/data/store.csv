@@ -1,0 +1,61 @@
+store_id,store_name,address,city,state,pincode,store_manager_name,store_opening_date,store_closing_date,reviews
+201,Daily Needs,"274, Main Road",Kochi,KL,123,Ramesh Kumar,2023-02-19,2030-06-25,Average
+202,Value Bazaar,"820, Main Road",Delhi,DL,,Priya Menon,2016-11-13,2023-01-22,Needs Improvement
+203,City Mart,"279, Main Road",Chennai,TN,913657,Anita Sharma,2019-02-07,2021-09-27,Needs Improvement
+204,Central Store,"206, Main Road",Delhi,DL,784116,Ramesh Kumar,2024-10-01,2026-09-22,Good
+205,Smart Shop,"201, Main Road",Hyderabad,TS,968242,Rahul Verma,2025-12-04,2034-01-30,Good
+206,Central Store,"987, Main Road",Bangalore,KA,810728,Sunita Das,2024-12-24,2032-11-11,Needs Improvement
+207,City Mart,"362, Main Road",Kochi,KL,632549,,2023-04-23,2031-05-18,Needs Improvement
+208,Smart Shop,"201, Main Road",Kochi,KL,896096,Priya Menon,2015-02-26,2016-09-07,Good
+209,City Mart,"706, Main Road",Mumbai,MH,121407,Rahul Verma,2018-09-27,,Average
+210,Fresh Hub,"931, Main Road",Trivandrum,KL,459934,Ramesh Kumar,2026-01-05,2033-11-27,Excellent
+,Central Store,"232, Main Road",Delhi,DL,707132,Rahul Verma,2024-11-28,,Excellent
+212,Smart Shop,"433, Main Road",Pune,MH,860282,Anita Sharma,2019-01-10,2025-08-21,Needs Improvement
+213,Central Store,"137, Main Road",Kochi,KL,593039,,2015-12-14,2015-08-24,Good
+214,Daily Needs,"598, Main Road",Chennai,TN,106214,Ramesh Kumar,2020-08-12,2022-12-12,Good
+215,Mega Store,"158, Main Road",Trivandrum,KL,257920,Priya Menon,2016-02-11,2015-07-26,Average
+216,City Mart,"406, Main Road",Trivandrum,KL,363935,Sunita Das,2015-05-20,2017-06-15,Good
+217,Fresh Hub,"47, Main Road",Hyderabad,TS,766535,Priya Menon,2022-06-11,,Needs Improvement
+218,Central Store,"482, Main Road",Trivandrum,KL,623790,Suresh Nair,2018-04-09,2025-06-12,Good
+219,Central Store,"680, Main Road",Trivandrum,KL,405584,Sunita Das,2024-06-02,2030-12-01,Excellent
+220,Value Bazaar,"929, Main Road",Trivandrum,KL,845872,Anita Sharma,2025-05-22,2029-05-07,Needs Improvement
+221,Smart Shop,"904, Main Road",Kochi,KL,649704,Rahul Verma,2019-06-26,,Excellent
+222,City Mart,"77, Main Road",Hyderabad,TS,104174,Sunita Das,2021-10-08,2020-07-15,
+223,Urban Mart,"72, Main Road",Delhi,DL,ABCDE,Priya Menon,2020-01-24,2027-12-27,Average
+224,City Mart,"860, Main Road",Kochi,KL,729940,Priya Menon,2026-01-04,2034-01-15,Excellent
+225,Daily Needs,"28, Main Road",Trivandrum,KL,597796,Suresh Nair,2019-04-30,2026-10-01,Excellent
+226,,"627, Main Road",Hyderabad,TS,380929,Rahul Verma,2019-02-28,2022-10-10,Needs Improvement
+227,Urban Mart,"202, Main Road",Hyderabad,TS,531345,Rahul Verma,2015-09-17,,Good
+228,Smart Shop,"569, Main Road",Trivandrum,KL,330343,Priya Menon,2017-12-04,,Needs Improvement
+229,Fresh Hub,"502, Main Road",Hyderabad,TS,633793,Sunita Das,2019-04-28,2022-04-08,Good
+230,Central Store,"707, Main Road",Delhi,DL,497239,Suresh Nair,2025-12-14,2028-07-20,Average
+231,Central Store,"588, Main Road",Trivandrum,KL,806320,Priya Menon,2022-01-04,2027-03-22,Excellent
+232,Central Store,"279, Main Road",Pune,MH,598519,Sunita Das,2021-02-19,2029-01-18,Average
+233,Value Bazaar,"572, Main Road",Delhi,DL,926636,Priya Menon,2019-10-20,,Average
+234,Fresh Hub,"67, Main Road",Mumbai,MH,625022,Anita Sharma,2021-03-21,,Needs Improvement
+235,Smart Shop,"149, Main Road",Pune,MH,630812,Sunita Das,2016-07-21,,Excellent
+236,Central Store,"407, Main Road",Chennai,TN,526747,Ramesh Kumar,2017-09-27,2023-01-01,
+237,Urban Mart,"917, Main Road",Kochi,KL,211410,Priya Menon,2015-10-21,2023-12-25,Average
+238,Central Store,"555, Main Road",Delhi,DL,517510,,2019-02-18,2018-12-05,
+239,Daily Needs,"440, Main Road",Trivandrum,KL,511628,Anita Sharma,2024-07-09,2027-06-23,
+240,,"894, Main Road",Chennai,TN,998989,Priya Menon,2017-02-17,2023-10-16,
+201,Central Store,"690, Main Road",Mumbai,MH,476681,Rahul Verma,2019-08-08,2021-12-19,Excellent
+202,Mega Store,"872, Main Road",Chennai,TN,849725,Rahul Verma,2018-11-24,2021-06-07,Good
+203,Daily Needs,"981, Main Road",Hyderabad,TS,907192,Ramesh Kumar,2023-08-19,2023-03-12,Good
+204,Central Store,"62, Main Road",Kochi,KL,677992,Priya Menon,2018-09-22,2023-10-14,
+205,Central Store,"476, Main Road",Bangalore,KA,975018,Suresh Nair,2022-03-26,2026-11-18,
+206,Value Bazaar,"783, Main Road",Kochi,KL,856521,Priya Menon,2019-05-10,2024-02-11,Excellent
+207,Central Store,"263, Main Road",Mumbai,MH,369068,Sunita Das,2019-02-26,,Needs Improvement
+208,Smart Shop,"46, Main Road",Mumbai,MH,123,Ramesh Kumar,2022-05-10,2023-10-17,Good
+209,Daily Needs,"16, Main Road",Hyderabad,TS,441056,Sunita Das,2017-05-09,2023-07-20,
+210,Central Store,"797, Main Road",Kochi,KL,ABCDE,Rahul Verma,2016-08-27,2022-09-29,Needs Improvement
+211,Smart Shop,"307, Main Road",Mumbai,MH,123,Ramesh Kumar,2022-10-13,2026-07-09,Good
+212,Daily Needs,"72, Main Road",Trivandrum,KL,314678,Ramesh Kumar,2021-10-23,2025-10-13,Good
+213,Mega Store,"639, Main Road",Pune,MH,738421,,2020-04-14,2024-01-04,Needs Improvement
+214,Urban Mart,"949, Main Road",Kochi,KL,755337,Sunita Das,2022-09-01,2027-07-02,Excellent
+215,Central Store,"604, Main Road",Pune,MH,366837,Priya Menon,2021-04-28,2023-11-21,Needs Improvement
+216,Value Bazaar,"439, Main Road",Delhi,DL,937233,Rahul Verma,2023-02-15,2026-12-31,Average
+,Daily Needs,"642, Main Road",Hyderabad,TS,659730,Suresh Nair,2026-01-23,2033-04-11,Good
+218,Value Bazaar,"257, Main Road",Kochi,KL,886627,Rahul Verma,2023-05-17,2026-05-01,Good
+219,City Mart,"407, Main Road",Mumbai,MH,897874,Ramesh Kumar,2024-05-25,2026-03-02,Excellent
+220,Value Bazaar,"748, Main Road",Mumbai,MH,648907,Priya Menon,2016-11-04,2022-04-07,Average

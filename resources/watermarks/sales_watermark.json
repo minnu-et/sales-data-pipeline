@@ -1,0 +1,10 @@
+{
+  "entity": "sales",
+  "last_processed_timestamp": "2026-02-10 00:00:00",
+  "updated_at": "2026-02-05 11:29:01",
+  "timestamp_column": "sales_date",
+  "metadata": {
+    "records_processed": 337180,
+    "run_timestamp": "2026-02-05 11:29:01"
+  }
+}
