@@ -1,0 +1,247 @@
+# =============================================================================
+# PRODUCTION ENVIRONMENT CONFIGURATION
+# =============================================================================
+# This file overrides settings from config.yaml for production deployment.
+# Use: ENV=prod python -m src.main.main
+#
+# Key differences from development:
+# - Optimized Spark settings for performance
+# - Strict data quality thresholds
+# - Minimal logging (only warnings/errors)
+# - Production S3 bucket
+# - No debug features enabled
+# =============================================================================
+
+# =============================================================================
+# SPARK CONFIGURATION (Production-optimized)
+# =============================================================================
+spark:
+  app_name: "Sales Pipeline - PROD"
+  master: "local[*]"  # Use all available cores (or "yarn" if on EMR/Databricks)
+  log_level: "WARN"   # Minimal logging (only warnings and errors)
+  config:
+    # Memory settings (adjust based on your cluster)
+    spark.driver.memory: "4g"
+    spark.executor.memory: "4g"
+    spark.executor.cores: "2"
+    
+    # Performance optimizations
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.sql.shuffle.partitions: "200"  # Default for production
+    
+    # S3 optimization
+    spark.hadoop.fs.s3a.connection.maximum: "100"
+    spark.hadoop.fs.s3a.threads.max: "20"
+    spark.hadoop.fs.s3a.fast.upload: "true"
+    
+    # AWS credentials (uses IAM role in production, not hardcoded keys)
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.aws.credentials.provider: "com.amazonaws.auth.DefaultAWSCredentialsProviderChain"
+
+# =============================================================================
+# AWS CONFIGURATION (Production bucket)
+# =============================================================================
+aws:
+  s3:
+    bucket_name: "de-project-s3-bucket-minnu"  # Production bucket
+    region: "us-east-1"
+
+# IMPORTANT: In real production, you might have a separate prod bucket:
+# aws:
+#   s3:
+#     bucket_name: "de-project-s3-bucket-minnu-prod"
+
+# =============================================================================
+# DATA PATHS (Production S3 - inherits from config.yaml)
+# =============================================================================
+# Paths are inherited from config.yaml
+# Override only if you need different prod paths:
+#
+# paths:
+#   bronze:
+#     sales:
+#       raw: "s3a://de-project-s3-bucket-minnu-prod/bronze/sales/raw"
+#       rejected: "s3a://de-project-s3-bucket-minnu-prod/bronze/sales/rejected"
+#   # ... etc
+
+# =============================================================================
+# PIPELINE SETTINGS (Strict quality controls)
+# =============================================================================
+pipeline:
+  mode: "incremental"  # Production should use incremental (not full refresh)
+  
+  # Strict quality thresholds - alert if violated
+  data_quality:
+    max_rejection_percentage: 5   # Alert if >5% records rejected (vs 10% default)
+    min_gold_join_percentage: 85  # Alert if <85% join success (vs 70% default)
+  
+  # Write modes (carefully chosen for production)
+  write_modes:
+    bronze: "append"      # Append new data (incremental)
+    silver: "overwrite"   # Overwrite with latest clean version
+    gold: "overwrite"     # Overwrite analytics tables
+  
+  # Partitioning (same as base config, but explicitly confirmed)
+  partitioning:
+    bronze:
+      enabled: true
+      columns: ["ingestion_date"]
+    silver:
+      sales:
+        enabled: true
+        columns: ["sales_year", "sales_month"]
+    gold:
+      sales_enriched:
+        enabled: true
+        columns: ["sales_year", "sales_month"]
+
+# =============================================================================
+# LOGGING CONFIGURATION (Production-grade)
+# =============================================================================
+logging:
+  level: "INFO"  # Standard production logging (not DEBUG)
+  
+  # File logging (with rotation)
+  file:
+    enabled: true
+    path: "logs/prod_pipeline.log"
+    max_bytes: 52428800  # 50MB (larger than dev)
+    backup_count: 10     # Keep more backups in production
+  
+  # Console logging (minimal in prod - use file logs)
+  console:
+    enabled: false  # Don't clutter console in production
+  
+  # Structured logging (JSON format for log aggregation tools)
+  structured:
+    enabled: true
+    path: "logs/prod_pipeline.json"
+
+# =============================================================================
+# ALERTING & MONITORING (Production-only)
+# =============================================================================
+monitoring:
+  enabled: true
+  
+  # Metrics to track
+  metrics:
+    track_row_counts: true
+    track_execution_time: true
+    track_rejection_rates: true
+    track_join_success_rates: true
+  
+  # Alert conditions (would integrate with CloudWatch/PagerDuty in real prod)
+  alerts:
+    pipeline_failure:
+      enabled: true
+      severity: "critical"
+    
+    high_rejection_rate:
+      enabled: true
+      threshold: 5  # Alert if >5% rejected
+      severity: "warning"
+    
+    low_join_rate:
+      enabled: true
+      threshold: 85  # Alert if <85% join success
+      severity: "warning"
+    
+    execution_time_exceeded:
+      enabled: true
+      threshold_minutes: 60  # Alert if pipeline takes >1 hour
+      severity: "warning"
+
+# =============================================================================
+# DATA RETENTION POLICY (Production-only)
+# =============================================================================
+retention:
+  # How long to keep data in each layer
+  bronze:
+    raw_data_days: 90        # Keep raw data for 3 months
+    rejected_data_days: 30   # Keep rejected data for 1 month
+  
+  silver:
+    retention_days: 365      # Keep for 1 year
+  
+  gold:
+    retention_days: -1       # Keep indefinitely (-1 means no deletion)
+  
+  logs:
+    retention_days: 30       # Keep logs for 1 month
+
+# =============================================================================
+# SECURITY SETTINGS (Production-only)
+# =============================================================================
+security:
+  # Encryption at rest
+  s3_encryption:
+    enabled: true
+    type: "SSE-S3"  # or "SSE-KMS" for more control
+  
+  # Data masking (for PII fields)
+  mask_pii:
+    enabled: false  # Enable if you have PII regulations (GDPR, etc.)
+    fields: ["email", "phone_number", "address"]
+
+# =============================================================================
+# PERFORMANCE TUNING (Production-specific)
+# =============================================================================
+performance:
+  # Broadcast join threshold (tables smaller than this will be broadcasted)
+  broadcast_threshold_mb: 100
+  
+  # Coalesce output files (prevent too many small files)
+  coalesce_output:
+    enabled: true
+    num_files:
+      bronze: 10
+      silver: 5
+      gold: 2
+  
+  # Enable compression
+  compression:
+    enabled: true
+    codec: "snappy"  # Fast compression (vs "gzip" for better compression)
+
+# =============================================================================
+# METADATA
+# =============================================================================
+metadata:
+  environment: "production"
+  owner: "Data Engineering Team"
+  support_contact: "data-eng@company.com"
+  oncall_schedule: "https://oncall.company.com/data-pipeline"
+  debug_mode: false
+
+# =============================================================================
+# DISASTER RECOVERY (Production-only)
+# =============================================================================
+disaster_recovery:
+  # Backup strategy
+  backup:
+    enabled: true
+    frequency: "daily"
+    retention_days: 30
+    backup_bucket: "de-project-s3-bucket-minnu-backup"
+  
+  # Rollback capability
+  rollback:
+    enabled: true
+    keep_previous_versions: 3  # Keep last 3 versions for rollback
+
+# =============================================================================
+# PRODUCTION DEPLOYMENT CHECKLIST
+# =============================================================================
+# Before deploying to production, ensure:
+# 
+# ✅ All tests pass (unit + integration)
+# ✅ Data quality thresholds validated
+# ✅ Monitoring/alerting configured
+# ✅ IAM roles configured (no hardcoded AWS keys)
+# ✅ S3 bucket permissions verified
+# ✅ Backup strategy tested
+# ✅ Rollback procedure documented
+# ✅ On-call team notified
+# ✅ Stakeholders informed of deployment window
+# ✅ Runbook updated with latest procedures

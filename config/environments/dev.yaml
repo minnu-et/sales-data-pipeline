@@ -1,0 +1,136 @@
+# =============================================================================
+# DEVELOPMENT ENVIRONMENT CONFIGURATION
+# =============================================================================
+# This file overrides settings from config.yaml for local development.
+# Use: ENV=dev python -m src.main.main
+#
+# Key differences from production:
+# - Uses local file paths instead of S3 (saves costs during testing)
+# - Lower Spark memory settings (works on laptops)
+# - More verbose logging (helps debugging)
+# - Smaller data quality thresholds (allows testing with bad data)
+# =============================================================================
+
+# =============================================================================
+# SPARK CONFIGURATION (Laptop-friendly)
+# =============================================================================
+spark:
+  app_name: "Sales Pipeline - DEV"
+  master: "local[2]"  # Use only 2 cores (easier on your laptop)
+  log_level: "INFO"   # More verbose for debugging
+  config:
+    spark.driver.memory: "2g"      # Reduced for local testing
+    spark.executor.memory: "2g"
+    spark.sql.shuffle.partitions: "4"  # Fewer partitions for small data
+
+# =============================================================================
+# DATA PATHS (Local filesystem instead of S3)
+# =============================================================================
+# OPTION 1: Uncomment these to test WITHOUT S3 (fully local)
+# paths:
+#   bronze:
+#     sales:
+#       raw: "data/bronze/sales/raw"
+#       rejected: "data/bronze/sales/rejected"
+#     product:
+#       raw: "data/bronze/product/raw"
+#       rejected: "data/bronze/product/rejected"
+#     store:
+#       raw: "data/bronze/store/raw"
+#       rejected: "data/bronze/store/rejected"
+#     customer:
+#       raw: "data/bronze/customer/raw"
+#       rejected: "data/bronze/customer/rejected"
+#   
+#   silver:
+#     sales: "data/silver/sales"
+#     product: "data/silver/product"
+#     store: "data/silver/store"
+#     customer: "data/silver/customer"
+#   
+#   gold:
+#     sales_enriched: "data/gold/sales_enriched"
+#     customer_metrics: "data/gold/customer_metrics"
+
+# OPTION 2: Keep using S3 but with dev bucket (currently active)
+# (Paths inherit from config.yaml - no override needed)
+
+# =============================================================================
+# AWS CONFIGURATION (Dev bucket - optional)
+# =============================================================================
+# aws:
+#   s3:
+#     bucket_name: "de-project-s3-bucket-minnu-dev"  # Separate dev bucket
+#     region: "us-east-1"
+
+# =============================================================================
+# PIPELINE SETTINGS (Relaxed for testing)
+# =============================================================================
+pipeline:
+  mode: "full_refresh"
+  
+  # Relaxed quality thresholds for testing with dirty data
+  data_quality:
+    max_rejection_percentage: 50  # Allow more rejections in dev (testing validation logic)
+    min_gold_join_percentage: 50  # Allow lower join rates (testing with incomplete data)
+  
+  # Write modes
+  write_modes:
+    bronze: "overwrite"  # Always overwrite in dev
+    silver: "overwrite"
+    gold: "overwrite"
+
+# =============================================================================
+# LOGGING CONFIGURATION (Verbose for debugging)
+# =============================================================================
+logging:
+  level: "DEBUG"  # More detailed logs in dev
+  
+  file:
+    enabled: true
+    path: "logs/dev_pipeline.log"
+    max_bytes: 5242880  # 5MB (smaller than prod)
+    backup_count: 3
+  
+  console:
+    enabled: true
+  
+  structured:
+    enabled: true  # Enable JSON logs for dev testing
+    path: "logs/dev_pipeline.json"
+
+# =============================================================================
+# METADATA
+# =============================================================================
+metadata:
+  environment: "development"
+  owner: "Developer - Local Machine"
+  debug_mode: true
+
+# =============================================================================
+# DEVELOPMENT-ONLY FEATURES
+# =============================================================================
+dev_features:
+  # Print DataFrames to console for debugging
+  show_dataframes: true
+  show_row_count: 10  # df.show(10)
+  
+  # Enable data sampling for faster testing
+  enable_sampling: false  # Set to true if you want to test with 10% of data
+  sample_fraction: 0.1
+  
+  # Skip certain validations for quick testing
+  skip_bronze_validation: false
+  skip_silver_validation: false
+  
+  # Cache intermediate DataFrames (faster re-runs during debugging)
+  enable_caching: true
+
+# =============================================================================
+# NOTES FOR DEVELOPERS
+# =============================================================================
+# 1. To use local paths: Uncomment "OPTION 1" paths section above
+# 2. To use S3 with dev bucket: Uncomment aws.s3.bucket_name override
+# 3. To test with sample data: Set enable_sampling: true
+# 4. To see more DataFrames: Set show_dataframes: true
+# 5. Never commit your .env file (it has AWS credentials)

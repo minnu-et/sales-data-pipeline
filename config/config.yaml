@@ -1,0 +1,207 @@
+# =============================================================================
+# MAIN CONFIGURATION FILE
+# =============================================================================
+# This config file contains all pipeline settings, paths, and parameters.
+# Environment-specific overrides are in config/environments/{env}.yaml
+
+# =============================================================================
+# SPARK CONFIGURATION
+# =============================================================================
+spark:
+  app_name: "Sales Data Pipeline"
+  master: "local[*]"
+  log_level: "WARN"
+  config:
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.aws.credentials.provider: "com.amazonaws.auth.DefaultAWSCredentialsProviderChain"
+    spark.jars.packages: "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262"
+
+# =============================================================================
+# AWS CONFIGURATION
+# =============================================================================
+aws:
+  s3:
+    bucket_name: "de-project-s3-bucket-minnu"
+    region: "us-east-1"
+
+# =============================================================================
+# DATA PATHS
+# =============================================================================
+paths:
+  # Source data (local CSV files)
+  source:
+    base_dir: "resources/data"
+    sales: "resources/data/sales_data.csv"
+    product: "resources/data/product.csv"
+    store: "resources/data/store.csv"
+    customer: "resources/data/customer.csv"
+  
+  # Bronze layer paths (raw + rejected)
+  bronze:
+    sales:
+      raw: "s3a://de-project-s3-bucket-minnu/bronze/sales/raw"
+      rejected: "s3a://de-project-s3-bucket-minnu/bronze/sales/rejected"
+    product:
+      raw: "s3a://de-project-s3-bucket-minnu/bronze/product/raw"
+      rejected: "s3a://de-project-s3-bucket-minnu/bronze/product/rejected"
+    store:
+      raw: "s3a://de-project-s3-bucket-minnu/bronze/store/raw"
+      rejected: "s3a://de-project-s3-bucket-minnu/bronze/store/rejected"
+    customer:
+      raw: "s3a://de-project-s3-bucket-minnu/bronze/customer/raw"
+      rejected: "s3a://de-project-s3-bucket-minnu/bronze/customer/rejected"
+  
+  # Silver layer paths (cleaned, conformed)
+  silver:
+    sales: "s3a://de-project-s3-bucket-minnu/silver/sales"
+    product: "s3a://de-project-s3-bucket-minnu/silver/product"
+    store: "s3a://de-project-s3-bucket-minnu/silver/store"
+    customer: "s3a://de-project-s3-bucket-minnu/silver/customer"
+  
+  # Gold layer paths (analytics-ready)
+  gold:
+    sales_enriched: "s3a://de-project-s3-bucket-minnu/gold/sales_enriched"
+    customer_metrics: "s3a://de-project-s3-bucket-minnu/gold/customer_metrics"
+
+# =============================================================================
+# PIPELINE SETTINGS
+# =============================================================================
+pipeline:
+  # Execution mode
+  mode: "incremental"  # Options: full_refresh, incremental
+  
+  # Data quality thresholds
+  data_quality:
+    max_rejection_percentage: 10  # Alert if > 10% records rejected
+    min_gold_join_percentage: 70  # Alert if < 70% of silver joins to gold
+  
+  # Write modes
+  write_modes:
+    bronze: "overwrite"
+    silver: "overwrite"
+    gold: "overwrite"
+  
+  # Partitioning strategy
+  partitioning:
+    bronze:
+      enabled: true
+      columns: ["ingestion_date"]
+    silver:
+      sales:
+        enabled: true
+        columns: ["sales_year", "sales_month"]
+      product:
+        enabled: false
+      store:
+        enabled: false
+      customer:
+        enabled: false
+    gold:
+      sales_enriched:
+        enabled: true
+        columns: ["sales_year", "sales_month"]
+      customer_metrics:
+        enabled: false
+
+# =============================================================================
+# WATERMARK CONFIGURATION (Incremental Processing)
+# =============================================================================
+watermark:
+  # Enable/disable watermark tracking
+  enabled: true
+  
+  # Storage location for watermark files
+  storage:
+    type: "s3"  # Options: s3, local
+    base_path: "s3a://de-project-s3-bucket-minnu/metadata/watermarks"
+    local_backup: "resources/watermarks"  # Local backup for dev/testing
+  
+  # Watermark files for each source table
+  files:
+    sales: "sales_watermark.json"
+    product: "product_watermark.json"
+    store: "store_watermark.json"
+    customer: "customer_watermark.json"
+  
+  # Timestamp column names in source data
+  timestamp_columns:
+    sales: "sales_date"
+    product: "updated_date"  # Assuming products have update timestamp
+    store: "store_opening_date"
+    customer: "created_date"  # Assuming customers have creation timestamp
+  
+  # Watermark behavior settings
+  behavior:
+    initial_load_lookback_days: 365  # On first run, process last N days
+    buffer_minutes: 5  # Process records 5 mins before watermark (late arrivals)
+    update_frequency: "per_run"  # Options: per_run, per_batch
+    
+  # Default watermark value for first run (if no watermark exists)
+  default:
+    sales: "2020-01-01 00:00:00"
+    product: "2020-01-01 00:00:00"
+    store: "2020-01-01 00:00:00"
+    customer: "2020-01-01 00:00:00"
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+logging:
+  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # File logging
+  file:
+    enabled: true
+    path: "logs/pipeline.log"
+    max_bytes: 10485760  # 10MB
+    backup_count: 5
+  
+  # Console logging
+  console:
+    enabled: true
+    
+  # Structured logging (JSON format)
+  structured:
+    enabled: false
+    path: "logs/pipeline.json"
+
+# =============================================================================
+# VALIDATION RULES (Bronze Layer)
+# =============================================================================
+validation:
+  sales:
+    required_fields: ["customer_id", "store_id", "sales_date", "price", "quantity"]
+    numeric_fields:
+      price:
+        min: 0
+        max: 100000
+      quantity:
+        min: 0
+        max: 1000
+  
+  product:
+    required_fields: ["product_id", "product_name", "current_price", "is_active"]
+    numeric_fields:
+      current_price:
+        min: 0
+        max: 100000
+  
+  store:
+    required_fields: ["store_id", "store_name", "store_opening_date"]
+  
+  customer:
+    required_fields: ["customer_id", "email", "date_of_birth"]
+    patterns:
+      email: "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$"
+
+# =============================================================================
+# METADATA
+# =============================================================================
+metadata:
+  project_name: "Sales Data Pipeline"
+  version: "1.0.0"
+  owner: "Data Engineering Team"
+  environment: "development"  # Will be overridden by environment-specific configs
