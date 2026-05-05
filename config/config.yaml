@@ -70,7 +70,7 @@ paths:
 # =============================================================================
 pipeline:
   # Execution mode
-  mode: "incremental"  # Options: full_refresh, incremental
+  mode: "full_refresh"  # Options: full_refresh, incremental
   
   # Data quality thresholds
   data_quality:
