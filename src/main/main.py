@@ -15,6 +15,7 @@ from main.transformations.product_transform import transform_product_data
 from main.transformations.store_transform import transform_store_data
 from main.transformations.customer_transform import transform_customer_data
 from main.transformations.scd_customer_transform import apply_scd_type2, get_current_customers,_add_scd_columns
+from main.transformations.bronze_processor import process_bronze_layer
 from main.gold.sales_gold import build_gold_sales_fact_enriched
 from main.gold.customer_metrics_gold import build_gold_customer_metrics
 
@@ -100,38 +101,14 @@ def main():
 
         df_raw = df_raw.withColumn("ingestion_date", current_date())
 
-        valid_customer = col("customer_id").isNotNull()
-        valid_store = col("store_id").isNotNull()
-        valid_sales_date = col("sales_date").isNotNull()
-        valid_sales_price = col("price").isNotNull() & (col("price") > 0)
-        valid_quantity = col("quantity").isNotNull() & (col("quantity") > 0)
-
-        bronze_valid_condition = (
-            valid_customer &
-            valid_store &
-            valid_sales_date &
-            valid_sales_price &
-            valid_quantity
-        )
-
-        # Order matters — first matching rule wins
-        rejection_reason = (
-            when(~valid_customer, lit("NULL_CUSTOMER_ID"))
-            .when(~valid_store, lit("NULL_STORE_ID"))
-            .when(~valid_sales_date, lit("NULL_SALES_DATE"))
-            .when(~valid_sales_price, lit("INVALID_PRICE"))
-            .when(~valid_quantity, lit("INVALID_QUANTITY"))
-            .otherwise(lit("UNKNOWN_REASON"))
-        )
-
-        valid_bronze_df = df_raw.filter(bronze_valid_condition)
-        rejected_bronze_df = (
-            df_raw
-            .filter(~bronze_valid_condition)
-            .withColumn("rejection_reason", rejection_reason)
-        )
-
-        rejected_bronze_df.printSchema()
+        sales_rules = {
+            "NULL_CUSTOMER_ID": {"condition": col("customer_id").isNotNull()},
+            "NULL_STORE_ID": {"condition": col("store_id").isNotNull()},
+            "NULL_SALES_DATE": {"condition": col("sales_date").isNotNull()},
+            "INVALID_PRICE": {"condition": col("price").isNotNull() & (col("price") > 0)},
+            "INVALID_QUANTITY": {"condition": col("quantity").isNotNull() & (col("quantity") > 0)}
+        }
+        valid_bronze_df, rejected_bronze_df = process_bronze_layer(df_raw, sales_rules, "sales")
 
         # NEW: Using config paths
         write_bronze_raw(valid_bronze_df, bronze_sales_raw)
@@ -163,43 +140,13 @@ def main():
         # Add ingestion_date
         product_df_raw = product_df_raw.withColumn("ingestion_date", current_date())
 
-        # Bronze validation rules (explicit)
-        valid_product_id = col("product_id").isNotNull()
-        valid_product_name = col("product_name").isNotNull()
-        valid_product_price = col("current_price").isNotNull() & (col("current_price") > 0)
-        valid_is_active = col("is_active").isNotNull()
-
-        product_bronze_valid_condition = (
-            valid_product_id &
-            valid_product_name &
-            valid_product_price &
-            valid_is_active
-        )
-
-        # Rejection reason (order matters)
-        product_rejection_reason = (
-            when(~valid_product_id, lit("NULL_PRODUCT_ID"))
-            .when(~valid_product_name, lit("NULL_PRODUCT_NAME"))
-            .when(~valid_product_price, lit("INVALID_PRICE"))
-            .when(~valid_is_active, lit("NULL_IS_ACTIVE"))
-            .otherwise(lit("UNKNOWN_REASON"))
-        )
-
-        # Split valid / rejected
-        product_bronze_valid_df = product_df_raw.filter(
-            product_bronze_valid_condition
-        )
-
-        product_bronze_rejected_df = (
-            product_df_raw
-            .filter(~product_bronze_valid_condition)
-            .withColumn("rejection_reason", product_rejection_reason)
-        )
-
-        # Debug schema (optional but recommended)
-        logger.info("Rejected Product Bronze Schema:")
-        product_bronze_rejected_df.printSchema()
-
+        product_rules = {
+            "NULL_PRODUCT_ID": {"condition": col("product_id").isNotNull()},
+            "NULL_PRODUCT_NAME": {"condition": col("product_name").isNotNull()},
+            "INVALID_PRICE": {"condition": col("current_price").isNotNull() & (col("current_price") > 0)},
+            "NULL_IS_ACTIVE": {"condition": col("is_active").isNotNull()}
+        }
+        product_bronze_valid_df, product_bronze_rejected_df = process_bronze_layer(product_df_raw, product_rules, "product")
         # NEW: Using config paths
         write_bronze_raw(product_bronze_valid_df, bronze_product_raw)
         write_bronze_rejected(product_bronze_rejected_df, bronze_product_rejected)
@@ -228,36 +175,12 @@ def main():
         store_df_raw = store_df_raw.withColumn(
             "ingestion_date", current_date())
 
-        # Bronze validation rules
-        valid_store_id = col("store_id").isNotNull()
-        valid_store_name = col("store_name").isNotNull()
-        valid_opening_date = col("store_opening_date").isNotNull()
-
-        bronze_store_condition = (
-            valid_store_id &
-            valid_store_name &
-            valid_opening_date
-        )
-
-        # Rejection reason (order matters)
-        store_rejection_reason = (
-            when(~valid_store_id, lit("NULL_STORE_ID"))
-            .when(~valid_store_name, lit("NULL_STORE_NAME"))
-            .when(~valid_opening_date, lit("NULL_OPENING_DATE"))
-            .otherwise(lit("UNKNOWN_REASON"))
-        )
-
-        # Split valid / rejected
-        store_bronze_valid_df = store_df_raw.filter(bronze_store_condition)
-
-        store_bronze_rejected_df = (
-            store_df_raw
-            .filter(~bronze_store_condition)
-            .withColumn("rejection_reason", store_rejection_reason)
-        )
-        logger.info("Rejected Store Bronze Schema:")
-        store_bronze_rejected_df.printSchema()
-       
+        store_rules = {
+            "NULL_STORE_ID": {"condition": col("store_id").isNotNull()},
+            "NULL_STORE_NAME": {"condition": col("store_name").isNotNull()},
+            "NULL_OPENING_DATE": {"condition": col("store_opening_date").isNotNull()}
+        }
+        store_bronze_valid_df, store_bronze_rejected_df = process_bronze_layer(store_df_raw, store_rules, "store")
         
         # NEW: Using config paths
         write_bronze_raw(store_bronze_valid_df, bronze_store_raw)
@@ -290,39 +213,12 @@ def main():
             "ingestion_date", current_date()
         )
 
-        # Bronze validation rules
-        valid_customer_id = col("customer_id").isNotNull()
-        valid_email = col("email").isNotNull()
-        valid_dob = col("date_of_birth").isNotNull()
-
-        bronze_customer_condition = (
-            valid_customer_id &
-            valid_email &
-            valid_dob
-        )
-
-        # Rejection reason (order matters)
-        customer_rejection_reason = (
-            when(~valid_customer_id, lit("NULL_CUSTOMER_ID"))
-            .when(~valid_email, lit("NULL_EMAIL"))
-            .when(~valid_dob, lit("NULL_DATE_OF_BIRTH"))
-            .otherwise(lit("UNKNOWN_REASON"))
-        )
-
-        # Split valid / rejected
-        customer_bronze_valid_df = customer_df_raw.filter(
-            bronze_customer_condition
-        )
-
-        customer_bronze_rejected_df = (
-            customer_df_raw
-            .filter(~bronze_customer_condition)
-            .withColumn("rejection_reason", customer_rejection_reason)
-        )
-
-        logger.info("Rejected Customer Bronze Schema:")
-        customer_bronze_rejected_df.printSchema()
-
+        customer_rules = {
+            "NULL_CUSTOMER_ID": {"condition": col("customer_id").isNotNull()},
+            "NULL_EMAIL": {"condition": col("email").isNotNull()},
+            "NULL_DATE_OF_BIRTH": {"condition": col("date_of_birth").isNotNull()}
+        }
+        customer_bronze_valid_df, customer_bronze_rejected_df = process_bronze_layer(customer_df_raw, customer_rules, "customer")
         # NEW: Using config paths
         write_bronze_raw(customer_bronze_valid_df, bronze_customer_raw)
         write_bronze_rejected(customer_bronze_rejected_df, bronze_customer_rejected)
