@@ -1,4 +1,17 @@
 [![CI Pipeline](https://github.com/minnu-et/sales-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/minnu-et/sales-data-pipeline/actions)
+## About This Project
+
+I built this project during a career break to get hands-on with real 
+data engineering concepts — not just tutorials, but actually implementing 
+things like SCD Type 2 and Airflow DAGs from scratch. The SCD Type 2 
+implementation was my favourite part — seeing customer history being 
+tracked in real-time was genuinely exciting. Airflow was the hardest — 
+it's still a work in progress for me, but building the DAG myself made 
+the concepts click in a way no course could.
+
+This is an end-to-end sales pipeline: CSV → Bronze → Silver → Gold on 
+AWS S3, built with PySpark, Airflow, Great Expectations, and a Streamlit 
+dashboard.
 
 # Sales Data Engineering Pipeline
 
